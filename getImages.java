@@ -12,24 +12,25 @@ import java.io.FileOutputStream;
 public class getImages {
     public static void main(String[]args){
         String search = "Tudo roxo";
+        Integer quantity = 5;
         try{
-            String link = String.format("https://br.freepik.com/search?dates=any&format=search&page=1&query=%s&selection=1&sort=popular", search.replace(" ", "%20"));
+            String link = String.format("https://stock.adobe.com/br/search?k=%s&search_type=usertyped'", search.replace(" ", "+"));
             Document doc = Jsoup.connect(link).get();
-            Elements noscript = doc.select("noscript");
-            Elements img = noscript.select("img.landscape");
+            Elements metaLink = doc.select("meta[itemprop=thumbnailUrl]");
             Integer count = 0;
-            for(String src : img.eachAttr("src")){
-                String nameImage = src.split("/")[4];
-                if(nameImage!="1px.png"){
-                    count++;
-                    URL urlConnection = new URL(src);
-                    InputStream in = new BufferedInputStream(urlConnection.openStream());
-                    OutputStream out = new BufferedOutputStream(new FileOutputStream("static/images/"+String.format("%s_%d", search.replace(" ", "_"), count)+".jpg"));
-                    for ( int i; (i = in.read()) != -1; ){
-                        out.write(i);
-                    }
-                    in.close();
-                    out.close();
+            for(String content : metaLink.eachAttr("content")){
+                count++;
+                System.out.println(content);
+                URL urlConnection = new URL(content);
+                InputStream in = new BufferedInputStream(urlConnection.openStream());
+                OutputStream out = new BufferedOutputStream(new FileOutputStream("static/images/"+String.format("%s_%d", search.replace(" ", "_"), count)+".jpg"));
+                for ( int i; (i = in.read()) != -1; ){
+                    out.write(i);
+                }
+                in.close();
+                out.close();
+                if(count==quantity){
+                    break;
                 }
             }
         }catch(Exception e){
